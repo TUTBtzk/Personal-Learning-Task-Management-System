@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑任务' if mode == 'edit' else '新增任务' }}{% endblock %}
+
+{% macro err(field) -%}
+  {%- if errors.get(field) %}<div class="invalid-feedback d-block">{{ errors[field] }}</div>{% endif -%}
+{%- endmacro %}
+
+{% set action = url_for('tasks.edit', task_id=task_id) if mode == 'edit' else url_for('tasks.create') %}
+
+{% block content %}
+<div class="spd-page-head">
+  <div>
+    <h1 class="spd-page-title">{{ '编辑任务' if mode == 'edit' else '新增任务' }}</h1>
+    <div class="spd-page-sub">
+      {% if errors %}<span class="text-danger">有 {{ errors|length }} 项需要修正，已填内容已保留</span>
+      {% else %}名称、截止日期必填；标题输入后会自动推荐课程与优先级{% endif %}
+    </div>
+  </div>
+  <a class="btn btn-light btn-sm" href="{{ url_for('tasks.index') }}">← 返回列表</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="spd-card">
+      <form method="post" action="{{ action }}" novalidate id="taskForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="mb-3">
+          <label class="form-label" for="title">任务名称 <span class="text-danger">*</span></label>
+          <input class="form-control {{ 'is-invalid' if errors.get('title') }}" id="title" name="title"
+                 value="{{ task.title }}" maxlength="60" required
+                 placeholder="如：软件项目开发综合实践-SPD1013 课程报告"
+                 data-counter="titleCount">
+          <div class="d-flex justify-content-between">
+            <div class="form-text">最多 50 个字</div>
+            <div class="form-text"><span id="titleCount">{{ task.title|length }}</span>/50</div>
+          </div>
+          {{ err('title') }}
+        </div>
+
+        {# 智能分类：标题失焦后调 /api/classify，命中关键词就推荐课程与优先级 #}
+        <div class="spd-suggest d-none" id="suggestBox" data-url="{{ url_for('api.classify') }}">
+          <div class="spd-suggest-head">🤖 智能分类建议</div>
+          <div class="spd-suggest-body" id="suggestText"></div>
+          <button class="btn btn-sm btn-outline-primary" type="button" id="applySuggest">采纳建议</button>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="course_id">所属课程</label>
+            <select class="form-select {{ 'is-invalid' if errors.get('course_id') }}"
+                    id="course_id" name="course_id">
+              <option value="">未分类</option>
+              {% for c in courses %}
+              <option value="{{ c['id'] }}"
+                {{ 'selected' if task.course_id|string == c['id']|string }}>{{ c['name'] }}</option>
+              {% endfor %}
+            </select>
+            {{ err('course_id') }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="due_date">截止日期 <span class="text-danger">*</span></label>
+            <input class="form-control {{ 'is-invalid' if errors.get('due_date') }}" type="date"
+                   id="due_date" name="due_date" value="{{ task.due_date }}" required>
+            <div class="spd-quickdate">
+              <button class="btn btn-sm btn-light" type="button" data-days="0">今天</button>
+              <button class="btn btn-sm btn-light" type="button" data-days="1">明天</button>
+              <button class="btn btn-sm btn-light" type="button" data-days="3">3 天后</button>
+              <button class="btn btn-sm btn-light" type="button" data-days="7">一周后</button>
+            </div>
+            {{ err('due_date') }}
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-6">
+            <label class="form-label d-block">优先级</label>
+            <div class="btn-group spd-priority" role="group" aria-label="优先级">
+              {% for value, label, cls in [('1', '高', 'danger'), ('2', '中', 'warning'), ('3', '低', 'success')] %}
+              <input class="btn-check" type="radio" name="priority" id="p{{ value }}" value="{{ value }}"
+                     {{ 'checked' if task.priority|string == value }} autocomplete="off">
+              <label class="btn btn-outline-{{ cls }}" for="p{{ value }}">{{ label }}</label>
+              {% endfor %}
+            </div>
+            {{ err('priority') }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label d-block">完成状态</label>
+            <div class="form-check form-switch spd-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="status" name="status"
+                     value="1" {{ 'checked' if task.status == 1 }}>
+              <label class="form-check-label" for="status">标记为已完成（会记录完成时刻）</label>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label" for="note">备注</label>
+          <textarea class="form-control {{ 'is-invalid' if errors.get('note') }}" id="note" name="note"
+                    rows="3" maxlength="220" data-counter="noteCount"
+                    placeholder="补充说明，如提交方式、参考资料、评分要求">{{ task.note }}</textarea>
+          <div class="d-flex justify-content-between">
+            <div class="form-text">最多 200 个字</div>
+            <div class="form-text"><span id="noteCount">{{ task.note|length }}</span>/200</div>
+          </div>
+          {{ err('note') }}
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-primary" type="submit">
+            {{ '保存修改' if mode == 'edit' else '创建任务' }}
+          </button>
+          <a class="btn btn-light" href="{{ url_for('tasks.index') }}">取消</a>
+        </div>
+      </form>
+
+      {% if mode == 'edit' %}
+      <hr class="my-4">
+      <form method="post" action="{{ url_for('tasks.delete', task_id=task_id) }}"
+            data-confirm="确定删除任务「{{ task.title }}」吗？删除后不可恢复。">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="back" value="{{ url_for('tasks.index') }}">
+        <button class="btn btn-outline-danger btn-sm" type="submit">删除这条任务</button>
+        <span class="text-muted small ms-2">删除会写入操作日志</span>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="spd-card spd-tips">
+      <div class="spd-card-head"><span>字段说明</span></div>
+      <ul class="mb-0">
+        <li><b>优先级</b>存 1/2/3，中文标签只在页面显示，这样 <code>ORDER BY priority</code>
+            才是「高→中→低」。</li>
+        <li><b>截止日期</b>存 <code>YYYY-MM-DD</code> 文本，字典序即时间序，可直接比较大小。</li>
+        <li><b>到期状态</b>（进行中/即将到期/今天到期/已逾期）不入库，按访问当天现算。</li>
+        <li><b>完成时刻</b>勾选「已完成」时自动写入，取消勾选时清空，趋势图据此统计。</li>
+        <li>提交失败时页面会保留已填内容并逐字段提示，不会清空重填。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}任务列表{% endblock %}
+
+{# 排序链接：保留当前所有筛选参数，只翻转排序字段与方向 #}
+{% macro sort_link(key, label) -%}
+  {%- set next_order = 'desc' if (sort == key and order == 'asc') else 'asc' -%}
+  {%- set args = request.args.to_dict() -%}
+  {%- set _ = args.update({'sort': key, 'order': next_order, 'page': 1}) -%}
+  <a class="spd-sort {{ 'active' if sort == key }}" href="{{ url_for('tasks.index', **args) }}">
+    {{ label }}<span class="spd-sort-arrow">{% if sort == key %}{{ '▲' if order == 'asc' else '▼' }}{% else %}⇅{% endif %}</span>
+  </a>
+{%- endmacro %}
+
+{% macro page_url(n) -%}
+  {%- set args = request.args.to_dict() -%}
+  {%- set _ = args.update({'page': n}) -%}
+  {{- url_for('tasks.index', **args) -}}
+{%- endmacro %}
+
+{% set PRIORITY_CLASS = {1: 'danger', 2: 'warning', 3: 'success'} %}
+
+{% block content %}
+<div class="spd-page-head">
+  <div>
+    <h1 class="spd-page-title">任务列表</h1>
+    <div class="spd-page-sub">
+      共 {{ total }} 条
+      {% if active_filters %}
+        · <span class="text-primary">已筛选 {{ active_filters }} 个条件</span>
+        · <a href="{{ url_for('tasks.index') }}">清除筛选</a>
+      {% endif %}
+      · 排序：{{ SORT_LABELS[sort] }} {{ '升序' if order == 'asc' else '降序' }}
+    </div>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('data_io.export', format='csv', **request.args.to_dict()) }}">⬇ 导出 CSV</a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('data_io.export', format='xlsx', **request.args.to_dict()) }}">⬇ 导出 Excel</a>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('tasks.create') }}">➕ 新增任务</a>
+  </div>
+</div>
+
+<div class="spd-summary-strip">
+  <span>总数 <b data-stat="total">{{ summary.total }}</b></span>
+  <span>已完成 <b class="text-success" data-stat="done">{{ summary.done }}</b></span>
+  <span>未完成 <b class="text-primary" data-stat="undone">{{ summary.undone }}</b></span>
+  <span>完成率 <b data-stat="completion_rate">{{ summary.completion_rate }}</b>%</span>
+  <span class="text-muted small">勾选左侧复选框即可就地标记完成，数字会同步刷新</span>
+</div>
+<div class="spd-card">
+  <div class="spd-presets">
+    <a class="spd-preset {{ 'active' if not filters.preset and not active_filters }}"
+       href="{{ url_for('tasks.index') }}">全部</a>
+    <a class="spd-preset {{ 'active' if filters.preset == 'undone' }}"
+       href="{{ url_for('tasks.index', preset='undone') }}">未完成</a>
+    <a class="spd-preset spd-preset-danger {{ 'active' if filters.preset == 'overdue' }}"
+       href="{{ url_for('tasks.index', preset='overdue') }}">已逾期 {{ summary.overdue }}</a>
+    <a class="spd-preset spd-preset-warning {{ 'active' if filters.preset == 'today' }}"
+       href="{{ url_for('tasks.index', preset='today') }}">今天到期 {{ summary.due_today }}</a>
+    <a class="spd-preset spd-preset-info {{ 'active' if filters.preset == 'due_soon' }}"
+       href="{{ url_for('tasks.index', preset='due_soon') }}">{{ summary.remind_days }} 天内 {{ summary.due_soon }}</a>
+  </div>
+
+  {# 多条件组合筛选：GET 提交，条件全在 URL 里，便于收藏和分享当前视图 #}
+  <form class="row g-2 align-items-end" method="get" action="{{ url_for('tasks.index') }}">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <div class="col-12 col-md-4 col-xl-3">
+      <label class="form-label" for="q">关键词（名称 / 备注）</label>
+      <input class="form-control form-control-sm" id="q" name="q" value="{{ filters.q }}"
+             placeholder="如：实验、报告、SPD">
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <label class="form-label" for="course_id">课程</label>
+      <select class="form-select form-select-sm" id="course_id" name="course_id">
+        <option value="">全部课程</option>
+        {% for c in courses %}
+        <option value="{{ c['id'] }}" {{ 'selected' if filters.course_id == c['id']|string }}>{{ c['name'] }}</option>
+        {% endfor %}
+        <option value="none" {{ 'selected' if filters.course_id == 'none' }}>未分类</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <label class="form-label" for="status">完成状态</label>
+      <select class="form-select form-select-sm" id="status" name="status">
+        <option value="">全部</option>
+        <option value="0" {{ 'selected' if filters.status == '0' }}>未完成</option>
+        <option value="1" {{ 'selected' if filters.status == '1' }}>已完成</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <label class="form-label" for="priority">优先级</label>
+      <select class="form-select form-select-sm" id="priority" name="priority">
+        <option value="">全部</option>
+        <option value="1" {{ 'selected' if filters.priority == '1' }}>高</option>
+        <option value="2" {{ 'selected' if filters.priority == '2' }}>中</option>
+        <option value="3" {{ 'selected' if filters.priority == '3' }}>低</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-4 col-xl-1-5">
+      <label class="form-label" for="due_from">截止起</label>
+      <input class="form-control form-control-sm" type="date" id="due_from" name="due_from"
+             value="{{ filters.due_from }}">
+    </div>
+    <div class="col-6 col-md-4 col-xl-1-5">
+      <label class="form-label" for="due_to">截止止</label>
+      <input class="form-control form-control-sm" type="date" id="due_to" name="due_to"
+             value="{{ filters.due_to }}">
+    </div>
+    <div class="col-12 col-md-4 col-xl-2 d-flex gap-2">
+      <button class="btn btn-primary btn-sm flex-grow-1" type="submit">🔍 筛选</button>
+      <a class="btn btn-light btn-sm" href="{{ url_for('tasks.index') }}">重置</a>
+    </div>
+  </form>
+</div>
+
+<div class="spd-card mt-3 p-0">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle spd-table mb-0">
+      <thead>
+        <tr>
+          <th style="width:3.2rem" class="text-center" title="勾选即标记完成">完成</th>
+          <th>{{ sort_link('title', '任务名称') }}</th>
+          <th style="width:9rem">课程</th>
+          <th style="width:11rem">{{ sort_link('due_date', '截止日期') }}</th>
+          <th style="width:6rem">{{ sort_link('priority', '优先级') }}</th>
+          <th style="width:7rem">{{ sort_link('status', '状态') }}</th>
+          <th style="width:9rem">{{ sort_link('created_at', '创建时间') }}</th>
+          <th style="width:8.5rem" class="text-end">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for t in tasks %}
+        {% set state = task_state(t) %}
+        {% set left = days_left(t) %}
+        <tr data-task-row="{{ t['id'] }}" data-due="{{ t['due_date'] }}"
+            class="spd-row spd-row-{{ state }} {{ 'spd-row-hl' if highlight == t['id'] }}">
+          <td class="text-center">
+            <input class="form-check-input spd-toggle" type="checkbox"
+                   data-toggle-url="{{ url_for('tasks.toggle', task_id=t['id']) }}"
+                   {{ 'checked' if t['status'] == 1 }}
+                   aria-label="标记「{{ t['title'] }}」完成状态">
+          </td>
+          <td>
+            <a class="spd-task-title {{ 'spd-done' if t['status'] == 1 }}"
+               href="{{ url_for('tasks.edit', task_id=t['id']) }}">{{ t['title'] }}</a>
+            {% if t['note'] %}<div class="spd-task-note" title="{{ t['note'] }}">{{ t['note'] }}</div>{% endif %}
+          </td>
+          <td>
+            <span class="spd-course-dot" style="background: {{ t['course_color'] or '#adb5bd' }}"></span>
+            <span class="spd-course-name">{{ t['course_name'] or '未分类' }}</span>
+          </td>
+          <td>
+            {{ t['due_date'] | date_cn }}
+            <div class="spd-due-left" data-days-left>
+              {% if t['status'] == 1 %}已完成
+              {% elif left < 0 %}逾期 {{ -left }} 天
+              {% elif left == 0 %}今天到期
+              {% else %}还有 {{ left }} 天{% endif %}
+            </div>
+          </td>
+          <td><span class="badge text-bg-{{ PRIORITY_CLASS[t['priority']] }}">{{ t['priority'] | priority_label }}</span></td>
+          <td><span class="badge text-bg-{{ STATE_BADGES[state][1] }}" data-state-badge>{{ STATE_BADGES[state][0] }}</span></td>
+          <td class="text-muted small">{{ t['created_at'][5:16] }}</td>
+          <td class="text-end text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('tasks.edit', task_id=t['id']) }}">编辑</a>
+            <button class="btn btn-sm btn-outline-danger spd-del" type="button"
+                    data-del-url="{{ url_for('tasks.delete', task_id=t['id']) }}"
+                    data-del-title="{{ t['title'] }}">删除</button>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="8">
+            <div class="spd-empty">
+              没有符合条件的任务。
+              {% if active_filters %}试试<a href="{{ url_for('tasks.index') }}">清除筛选</a>，{% endif %}
+              或者<a href="{{ url_for('tasks.create') }}">新增一条任务</a>。
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if pages > 1 %}
+<nav class="spd-pager" aria-label="分页导航">
+  <ul class="pagination pagination-sm mb-0">
+    <li class="page-item {{ 'disabled' if page == 1 }}">
+      <a class="page-link" href="{{ page_url(page - 1) }}">上一页</a>
+    </li>
+    {% for p in range(1, pages + 1) %}
+    <li class="page-item {{ 'active' if p == page }}">
+      <a class="page-link" href="{{ page_url(p) }}">{{ p }}</a>
+    </li>
+    {% endfor %}
+    <li class="page-item {{ 'disabled' if page == pages }}">
+      <a class="page-link" href="{{ page_url(page + 1) }}">下一页</a>
+    </li>
+  </ul>
+  <span class="text-muted small">第 {{ page }} / {{ pages }} 页，共 {{ total }} 条</span>
+</nav>
+{% endif %}
+<div class="modal fade" id="delModal" tabindex="-1" aria-labelledby="delModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h6" id="delModalLabel">确认删除</h2>
+        <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body">
+        确定删除任务「<b id="delTitle"></b>」吗？<br>
+        <span class="text-muted small">删除不可撤销，但操作会写入日志，可在「数据管理」页追溯。</span>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light btn-sm" type="button" data-bs-dismiss="modal">取消</button>
+        {# 删除是写操作，必须 POST + CSRF 令牌；back 用于删完回到当前筛选视图 #}
+        <form method="post" id="delForm" class="m-0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="back" value="{{ request.full_path }}">
+          <button class="btn btn-danger btn-sm" type="submit">确认删除</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 · {{ APP_NAME }} · {{ PROJECT_CODE }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="spd-login-body">
+
+<div class="spd-login-wrap">
+  <div class="spd-login-card">
+    <div class="text-center mb-3">
+      <div class="spd-login-logo">📚</div>
+      <h1 class="h4 fw-bold mb-1">{{ APP_NAME }}</h1>
+      <div class="text-muted small">
+        {{ STUDENT_NAME }} · {{ STUDENT_ID }} · 项目标识
+        <span class="badge text-bg-primary">{{ PROJECT_CODE }}</span>
+      </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger py-2 small">{{ error }}</div>
+    {% endif %}
+
+    {# 改完密码会被强制登出，提示信息要在这里显示出来，否则用户不知道为什么回到了登录页 #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} py-2 small">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="mb-3">
+        <label class="form-label" for="username">用户名</label>
+        <input class="form-control" id="username" name="username" value="{{ username or '' }}"
+               autocomplete="username" autofocus required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="password">密码</label>
+        <input class="form-control" id="password" name="password" type="password"
+               autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary w-100" type="submit">登录</button>
+    </form>
+    <div class="spd-login-hint">
+      演示账号：<code>{{ config.DEFAULT_USERNAME }}</code> / <code>{{ config.DEFAULT_PASSWORD }}</code>
+      <div class="text-muted">单用户系统，密码经 Werkzeug 哈希后存库，可在「数据管理」页修改。</div>
+    </div>
+  </div>
+
+  <div class="text-center text-muted small mt-3">
+    Flask + SQLite + Bootstrap 5 + Chart.js · 仅监听 127.0.0.1
+  </div>
+</div>
+
+</body>
+</html>

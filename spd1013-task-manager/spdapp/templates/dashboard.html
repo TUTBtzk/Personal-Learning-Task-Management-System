@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}仪表盘{% endblock %}
+
+{% block content %}
+<div class="spd-page-head">
+  <div>
+    <h1 class="spd-page-title">数据仪表盘</h1>
+    <div class="spd-page-sub">
+      {{ STUDENT_NAME }} · {{ STUDENT_ID }} · 项目标识 {{ PROJECT_CODE }} · 统计日期 {{ stats.today }}
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-primary btn-sm" type="button" id="refreshStats"
+            data-url="{{ url_for('api.get_stats') }}">↻ 刷新数据</button>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('api.get_stats') }}" target="_blank">
+      查看 /api/stats
+    </a>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('tasks.create') }}">➕ 新增任务</a>
+  </div>
+</div>
+
+{% include "partials/_stat_cards.html" %}
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-5">
+    <div class="spd-card h-100">
+      <div class="spd-card-head">
+        <span>完成情况占比</span>
+        <small class="text-muted">已完成 / 未完成</small>
+      </div>
+      <div class="spd-chart-box">
+        <canvas id="chartStatus" aria-label="任务完成情况占比环形图" role="img"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="spd-card h-100">
+      <div class="spd-card-head">
+        <span>各课程任务分布</span>
+        <small class="text-muted">堆叠柱状图</small>
+      </div>
+      <div class="spd-chart-box">
+        <canvas id="chartCourse" aria-label="各课程任务数量堆叠柱状图" role="img"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row g-3 mt-1">
+  <div class="col-lg-5">
+    <div class="spd-card h-100">
+      <div class="spd-card-head">
+        <span>优先级分布</span>
+        <small class="text-muted">高 / 中 / 低</small>
+      </div>
+      <div class="spd-chart-box">
+        <canvas id="chartPriority" aria-label="任务优先级分布柱状图" role="img"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="spd-card h-100">
+      <div class="spd-card-head">
+        <span>近 {{ stats.trend | length }} 天完成趋势</span>
+        <small class="text-muted">按 completed_at 统计，无完成的日期补 0</small>
+      </div>
+      <div class="spd-chart-box">
+        <canvas id="chartTrend" aria-label="近七天每日完成任务数折线图" role="img"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-7">
+    <div class="spd-card h-100">
+      <div class="spd-card-head">
+        <span>近期待办</span>
+        <a class="small" href="{{ url_for('tasks.index', preset='undone') }}">查看全部未完成 →</a>
+      </div>
+      {% if upcoming %}
+      <ul class="spd-upcoming">
+        {% for t in upcoming %}
+        {% set state = task_state(t) %}
+        <li class="spd-upcoming-item" data-task-row="{{ t['id'] }}">
+          <span class="spd-course-dot" style="background: {{ t['course_color'] or '#adb5bd' }}"></span>
+          <div class="flex-grow-1 min-w-0">
+            <a class="spd-upcoming-title" href="{{ url_for('tasks.edit', task_id=t['id']) }}">{{ t['title'] }}</a>
+            <div class="spd-upcoming-meta">
+              {{ t['course_name'] or '未分类' }} · {{ t['due_date'] | date_cn }}
+              · 优先级 {{ t['priority'] | priority_label }}
+            </div>
+          </div>
+          <span class="badge text-bg-{{ STATE_BADGES[state][1] }}">{{ STATE_BADGES[state][0] }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="spd-empty">🎉 没有未完成的任务，全部搞定！</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="spd-card h-100">
+      <div class="spd-card-head">
+        <span>最近操作</span>
+        <a class="small" href="{{ url_for('data_io.index') }}">全部日志 →</a>
+      </div>
+      {% if logs %}
+      <ul class="spd-loglist">
+        {% for lg in logs %}
+        <li>
+          <span class="badge text-bg-light">{{ lg['action'] | action_label }}</span>
+          <span class="spd-log-target">{{ lg['target'] }}</span>
+          <span class="spd-log-time">{{ lg['created_at'][5:16] }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="spd-empty">暂无操作记录</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="spd-card mt-3">
+  <div class="spd-card-head"><span>课程完成率明细</span>
+    <small class="text-muted">LEFT JOIN 统计，零任务课程也会列出</small></div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>课程</th><th class="text-end">总数</th><th class="text-end">已完成</th>
+        <th class="text-end">未完成</th><th style="width:34%">完成率</th></tr></thead>
+      <tbody>
+      {% for c in by_course %}
+        <tr>
+          <td><span class="spd-course-dot" style="background: {{ c.color }}"></span>{{ c.name }}</td>
+          <td class="text-end">{{ c.total }}</td>
+          <td class="text-end text-success">{{ c.done }}</td>
+          <td class="text-end text-primary">{{ c.undone }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress flex-grow-1" style="height:8px">
+                <div class="progress-bar" role="progressbar" style="width: {{ c.rate }}%; background: {{ c.color }}"
+                     aria-valuenow="{{ c.rate }}" aria-valuemin="0" aria-valuemax="100"
+                     aria-label="{{ c.name }} 完成率"></div>
+              </div>
+              <small class="text-muted" style="width:3.2rem">{{ c.rate }}%</small>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{# 首屏直接用服务端渲染好的 JSON 画图（不闪空白），之后的刷新走 /api/stats #}
+<script type="application/json" id="statsData">{{ stats | tojson }}</script>
+<script src="{{ url_for('static', filename='vendor/chart.umd.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

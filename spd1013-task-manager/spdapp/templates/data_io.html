@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}数据管理{% endblock %}
+
+{% block content %}
+<div class="spd-page-head">
+  <div>
+    <h1 class="spd-page-title">数据管理</h1>
+    <div class="spd-page-sub">导入导出 · 数据库备份 · 操作日志 · 修改密码</div>
+  </div>
+  <a class="btn btn-light btn-sm" href="{{ url_for('tasks.index') }}">← 返回任务列表</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="spd-card h-100">
+      <div class="spd-card-head"><span>⬇ 导出任务</span>
+        <small class="text-muted">文件名带 {{ PROJECT_CODE }}</small></div>
+      <p class="text-muted small mb-3">
+        导出<b>全部</b>任务；若只想导出某批数据，可在任务列表页先筛选，再点那里的导出按钮
+        —— 筛选条件会随 URL 一起带过去。
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('data_io.export', format='csv') }}">
+          导出 CSV（UTF-8 BOM）</a>
+        <a class="btn btn-outline-success btn-sm" href="{{ url_for('data_io.export', format='xlsx') }}">
+          导出 Excel（.xlsx）</a>
+      </div>
+      <div class="form-text mt-2">CSV 使用 <code>utf-8-sig</code> 编码，Excel 双击打开不乱码。</div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="spd-card h-100">
+      <div class="spd-card-head"><span>⬆ 导入任务</span>
+        <small class="text-muted">.csv / .xlsx，≤ 2 MB</small></div>
+      <form method="post" action="{{ url_for('data_io.import_data') }}"
+            enctype="multipart/form-data" class="mb-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="file" name="file" accept=".csv,.xlsx" required
+                 aria-label="选择要导入的文件">
+          <button class="btn btn-primary" type="submit">开始导入</button>
+        </div>
+      </form>
+      <div class="form-text">
+        表头顺序：{% for h in template_headers %}<code>{{ h }}</code>{{ '、' if not loop.last }}{% endfor %}<br>
+        有表头行会自动跳过；课程不存在会自动新建；<b>坏行跳过并逐条报错</b>，不影响其它行导入。
+      </div>
+    </div>
+  </div>
+</div>
+{% if result %}
+<div class="spd-card mt-3">
+  <div class="spd-card-head"><span>导入结果 · {{ result.filename }}</span>
+    <small class="text-muted">共读取 {{ result.total }} 行</small></div>
+  <div class="d-flex flex-wrap gap-4 mb-2">
+    <div>成功 <b class="text-success fs-5">{{ result.success }}</b> 条</div>
+    <div>失败 <b class="text-danger fs-5">{{ result.failed_total }}</b> 条</div>
+  </div>
+  {% if result.failed %}
+  <div class="table-responsive">
+    <table class="table table-sm mb-0">
+      <thead><tr><th style="width:5rem">行号</th><th>失败原因</th><th>原始内容（前 3 列）</th></tr></thead>
+      <tbody>
+        {% for f in result.failed %}
+        <tr><td>第 {{ f.row }} 行</td><td class="text-danger">{{ f.reason }}</td>
+            <td class="text-muted small">{{ f.raw }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if result.failed_total > result.failed | length %}
+  <div class="form-text">只显示前 {{ result.failed | length }} 条失败明细。</div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="spd-card h-100">
+      <div class="spd-card-head"><span>🗄 数据库备份</span>
+        <small class="text-muted">SQLite backup() 快照</small></div>
+      <form method="post" action="{{ url_for('data_io.backup') }}" class="mb-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="btn btn-outline-primary btn-sm" type="submit">立即备份</button>
+        <span class="text-muted small ms-2">生成 data/backups/tasks_时间戳.db</span>
+      </form>
+      {% if backups %}
+      <ul class="spd-backups">
+        {% for b in backups %}
+        <li><code>{{ b.name }}</code>
+          <span class="text-muted small">{{ b.size_kb }} KB · {{ b.mtime }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="spd-empty mb-0">还没有备份文件</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="spd-card h-100">
+      <div class="spd-card-head"><span>🔑 修改密码</span>
+        <small class="text-muted">当前用户 {{ current_user['username'] }}</small></div>
+      <form method="post" action="{{ url_for('data_io.change_password') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="mb-2">
+          <label class="form-label" for="old_password">原密码</label>
+          <input class="form-control form-control-sm" type="password" id="old_password"
+                 name="old_password" autocomplete="current-password" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="new_password">新密码（至少 6 位）</label>
+          <input class="form-control form-control-sm" type="password" id="new_password"
+                 name="new_password" autocomplete="new-password" minlength="6" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="confirm_password">确认新密码</label>
+          <input class="form-control form-control-sm" type="password" id="confirm_password"
+                 name="confirm_password" autocomplete="new-password" minlength="6" required>
+        </div>
+        <button class="btn btn-outline-danger btn-sm" type="submit">修改并重新登录</button>
+      </form>
+      <div class="form-text mt-2">密码经 Werkzeug PBKDF2 哈希后入库，库里不存明文。</div>
+    </div>
+  </div>
+</div>
+
+<div class="spd-card mt-3">
+  <div class="spd-card-head"><span>📜 操作日志</span>
+    <small class="text-muted">最近 {{ logs | length }} / 共 {{ log_total }} 条</small></div>
+  <div class="table-responsive spd-logtable">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead><tr><th style="width:6rem">操作</th><th>对象</th><th>详情</th>
+        <th style="width:11rem">时间</th></tr></thead>
+      <tbody>
+      {% for lg in logs %}
+        <tr>
+          <td><span class="badge text-bg-light">{{ lg['action'] | action_label }}</span></td>
+          <td class="text-truncate" style="max-width:14rem">{{ lg['target'] }}</td>
+          <td class="text-muted small">{{ lg['detail'] }}</td>
+          <td class="text-muted small">{{ lg['created_at'] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4"><div class="spd-empty">暂无操作记录</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

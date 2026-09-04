@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} 出错了{% endblock %}
+
+{% block content %}
+<div class="spd-card spd-error">
+  <div class="spd-error-code">{{ code }}</div>
+  <h1 class="h5 mb-2">{{ message }}</h1>
+  <p class="text-muted mb-4">
+    {% if code == 404 %}检查一下地址，或从下面的入口重新开始。
+    {% elif code == 400 %}多数是页面停留过久导致令牌失效，刷新页面重新提交即可。
+    {% elif code == 413 %}请把文件拆小后再导入。
+    {% else %}可以回到首页重试；若反复出现，请查看运行 app.py 的控制台输出。{% endif %}
+  </p>
+  <div class="d-flex gap-2 justify-content-center flex-wrap">
+    <a class="btn btn-primary btn-sm" href="{{ url_for('dashboard.index') }}">回到仪表盘</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('tasks.index') }}">任务列表</a>
+  </div>
+</div>
+{% endblock %}

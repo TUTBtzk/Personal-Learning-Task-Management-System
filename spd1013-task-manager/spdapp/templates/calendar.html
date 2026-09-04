@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}日历视图{% endblock %}
+
+{% block content %}
+<div class="spd-page-head">
+  <div>
+    <h1 class="spd-page-title">{{ year }} 年 {{ month }} 月</h1>
+    <div class="spd-page-sub">
+      本月任务 {{ month_total }} 条 · 已完成 {{ month_done }} 条 ·
+      未完成 {{ month_total - month_done }} 条 · 今天 {{ today }}
+    </div>
+  </div>
+  <div class="btn-group">
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('calendar_view.month_view', y=prev_ym[0], m=prev_ym[1]) }}">← 上月</a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('calendar_view.month_view') }}">本月</a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('calendar_view.month_view', y=next_ym[0], m=next_ym[1]) }}">下月 →</a>
+  </div>
+</div>
+
+<div class="spd-card">
+  <div class="spd-cal-week">
+    {% for wd in ['一', '二', '三', '四', '五', '六', '日'] %}
+    <div class="spd-cal-wd {{ 'spd-cal-weekend' if loop.index > 5 }}">周{{ wd }}</div>
+    {% endfor %}
+  </div>
+
+  {# 整月网格一次查库、按日期分组后铺格子，避免 42 个格子查 42 次数据库 #}
+  <div class="spd-cal-grid">
+    {% for week in weeks %}
+      {% for day in week %}
+        {% set key = day.isoformat() %}
+        {% set items = grouped.get(key, []) %}
+        <div class="spd-cal-cell {{ 'spd-cal-out' if day.month != month }} {{ 'spd-cal-today' if key == today }}">
+          <div class="spd-cal-daytop">
+            <span class="spd-cal-day">{{ day.day }}</span>
+            {% if items %}<span class="spd-cal-count">{{ items|length }}</span>{% endif %}
+            <a class="spd-cal-add" href="{{ url_for('tasks.create', due=key) }}"
+               title="在 {{ key }} 新增任务">+</a>
+          </div>
+          <div class="spd-cal-body">
+            {% for t in items[:3] %}
+              {% set state = task_state(t) %}
+              <a class="spd-chip spd-chip-{{ state }}"
+                 style="border-left-color: {{ t['course_color'] or '#adb5bd' }}"
+                 href="{{ url_for('tasks.edit', task_id=t['id']) }}"
+                 title="{{ t['title'] }}（{{ t['course_name'] or '未分类' }} · 优先级 {{ t['priority'] | priority_label }} · {{ STATE_BADGES[state][0] }}）">
+                {{ t['title'] }}
+              </a>
+            {% endfor %}
+            {% if items|length > 3 %}
+            <a class="spd-cal-more" href="{{ url_for('tasks.index', due_from=key, due_to=key) }}">
+              +{{ items|length - 3 }} 更多
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <div class="spd-cal-legend">
+    <span><i class="spd-legend-box spd-chip-overdue"></i>已逾期</span>
+    <span><i class="spd-legend-box spd-chip-today"></i>今天到期</span>
+    <span><i class="spd-legend-box spd-chip-soon"></i>{{ REMIND_DAYS }} 天内到期</span>
+    <span><i class="spd-legend-box spd-chip-normal"></i>进行中</span>
+    <span><i class="spd-legend-box spd-chip-done"></i>已完成</span>
+    <span class="text-muted ms-auto">左侧竖条颜色 = 课程颜色；点标题可编辑，点格子右上角 + 可按该日期新增</span>
+  </div>
+</div>
+{% endblock %}

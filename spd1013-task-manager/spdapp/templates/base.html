@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}{% endblock %} · {{ APP_NAME }} · {{ PROJECT_CODE }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+
+<!-- 顶部信息条：姓名 / 学号 / 项目标识 写在 base.html，所以每个页面截图都自带个性化信息 -->
+<nav class="navbar navbar-expand navbar-dark spd-navbar sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-semibold" href="{{ url_for('dashboard.index') }}">
+      📚 {{ APP_NAME }}
+    </a>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <div class="spd-idcard d-none d-md-flex">
+        <span class="spd-idcard-item">姓名 <b>{{ STUDENT_NAME }}</b></span>
+        <span class="spd-idcard-sep"></span>
+        <span class="spd-idcard-item">学号 <b>{{ STUDENT_ID }}</b></span>
+        <span class="spd-idcard-sep"></span>
+        <span class="spd-idcard-item">项目标识 <b class="text-primary">{{ PROJECT_CODE }}</b></span>
+      </div>
+
+      <a class="btn btn-sm btn-outline-light position-relative"
+         href="{{ url_for('tasks.index', preset='due_soon') }}"
+         title="{{ REMIND_DAYS }} 天内到期 / 今日到期 / 已逾期的任务">
+        🔔
+        <span id="reminderBadge"
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {{ 'd-none' if not reminder_count }}">
+          {{ reminder_count }}
+        </span>
+      </a>
+
+      {% if current_user %}
+      <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="btn btn-sm btn-outline-light" type="submit">退出</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="spd-idcard spd-idcard-mobile d-md-none">
+  <span>{{ STUDENT_NAME }}</span><span class="spd-idcard-sep"></span>
+  <span>{{ STUDENT_ID }}</span><span class="spd-idcard-sep"></span>
+  <b class="text-primary">{{ PROJECT_CODE }}</b>
+</div>
+{# 导航项集中定义一次，侧边栏（大屏）和横向标签（小屏）复用同一份数据 #}
+{% set nav_items = [
+  ('dashboard.index',            '📊', '仪表盘'),
+  ('tasks.index',                '📝', '任务列表'),
+  ('tasks.create',               '➕', '新增任务'),
+  ('calendar_view.month_view',   '📅', '日历视图'),
+  ('data_io.index',              '💾', '数据管理')
+] %}
+
+<div class="container-fluid spd-shell">
+  <div class="row g-3">
+    <div class="col-lg-2 d-none d-lg-block">
+      <nav class="spd-sidebar">
+        {% for endpoint, icon, label in nav_items %}
+        <a class="spd-navlink {{ 'active' if request.endpoint == endpoint }}"
+           href="{{ url_for(endpoint) }}">
+          <span class="spd-navicon">{{ icon }}</span>{{ label }}
+        </a>
+        {% endfor %}
+        <div class="spd-sidebar-foot">
+          <div class="small text-muted">今日</div>
+          <div class="fw-semibold">{{ today }}</div>
+        </div>
+      </nav>
+    </div>
+
+    <div class="col-lg-10">
+      <nav class="spd-tabs d-lg-none">
+        {% for endpoint, icon, label in nav_items %}
+        <a class="spd-tab {{ 'active' if request.endpoint == endpoint }}"
+           href="{{ url_for(endpoint) }}">{{ icon }} {{ label }}</a>
+        {% endfor %}
+      </nav>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="spd-flash">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+
+      <footer class="spd-footer">
+        {{ APP_NAME }} · {{ STUDENT_NAME }}（{{ STUDENT_ID }}）· 项目标识 {{ PROJECT_CODE }}
+        · Flask + SQLite + Bootstrap 5 + Chart.js
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

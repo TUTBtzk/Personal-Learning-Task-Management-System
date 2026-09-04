@@ -1,0 +1,69 @@
+{# 统计卡片：仪表盘和任务列表页共用。data-stat 属性供 JS 勾选任务后就地刷新数字 #}
+<div class="row g-3" id="statCards">
+  <div class="col-6 col-xl-3">
+    <div class="spd-stat">
+      <div class="spd-stat-top">
+        <span class="spd-stat-label">总任务数</span><span class="spd-stat-icon">📋</span>
+      </div>
+      <div class="spd-stat-value" data-stat="total">{{ summary.total }}</div>
+      <div class="spd-stat-foot text-muted">全部录入的学习任务</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-xl-3">
+    <div class="spd-stat spd-stat-done">
+      <div class="spd-stat-top">
+        <span class="spd-stat-label">已完成</span><span class="spd-stat-icon">✅</span>
+      </div>
+      <div class="spd-stat-value text-success" data-stat="done">{{ summary.done }}</div>
+      <div class="spd-stat-foot text-muted">status = 1</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-xl-3">
+    <div class="spd-stat spd-stat-undone">
+      <div class="spd-stat-top">
+        <span class="spd-stat-label">未完成</span><span class="spd-stat-icon">🕗</span>
+      </div>
+      <div class="spd-stat-value text-primary" data-stat="undone">{{ summary.undone }}</div>
+      <div class="spd-stat-foot text-muted">status = 0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-xl-3">
+    <div class="spd-stat spd-stat-rate">
+      <div class="spd-stat-top">
+        <span class="spd-stat-label">完成率</span><span class="spd-stat-icon">📈</span>
+      </div>
+      <div class="spd-stat-value">
+        <span data-stat="completion_rate">{{ summary.completion_rate }}</span><small>%</small>
+      </div>
+      <div class="progress spd-stat-progress">
+        <div class="progress-bar bg-success" role="progressbar" data-stat-bar="completion_rate"
+             style="width: {{ summary.completion_rate }}%"
+             aria-valuenow="{{ summary.completion_rate }}"
+             aria-valuemin="0" aria-valuemax="100"
+             aria-label="任务完成率"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{# 提醒条：点一下就跳到对应的预设筛选视图 #}
+<div class="spd-remind">
+  <span class="spd-remind-title">⏰ 截止提醒</span>
+  <a class="spd-remind-pill spd-remind-danger"
+     href="{{ url_for('tasks.index', preset='overdue') }}">
+    已逾期 <b data-stat="overdue">{{ summary.overdue }}</b>
+  </a>
+  <a class="spd-remind-pill spd-remind-warning"
+     href="{{ url_for('tasks.index', preset='today') }}">
+    今天到期 <b data-stat="due_today">{{ summary.due_today }}</b>
+  </a>
+  <a class="spd-remind-pill spd-remind-info"
+     href="{{ url_for('tasks.index', preset='due_soon') }}">
+    {{ summary.remind_days }} 天内到期 <b data-stat="due_soon">{{ summary.due_soon }}</b>
+  </a>
+  <span class="text-muted small ms-auto d-none d-md-inline">
+    到期状态按「今天 = {{ today }}」实时计算，不入库
+  </span>
+</div>
