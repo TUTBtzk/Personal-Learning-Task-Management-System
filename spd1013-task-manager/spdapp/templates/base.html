@@ -14,7 +14,7 @@
 <nav class="navbar navbar-expand navbar-dark spd-navbar sticky-top">
   <div class="container-fluid">
     <a class="navbar-brand fw-semibold" href="{{ url_for('dashboard.index') }}">
-      📚 {{ APP_NAME }}
+      ✨ {{ APP_NAME }}
     </a>
 
     <div class="d-flex align-items-center gap-2 ms-auto">
@@ -53,11 +53,11 @@
 </div>
 {# 导航项集中定义一次，侧边栏（大屏）和横向标签（小屏）复用同一份数据 #}
 {% set nav_items = [
-  ('dashboard.index',            '📊', '仪表盘'),
-  ('tasks.index',                '📝', '任务列表'),
+  ('dashboard.index',            '📈', '仪表盘'),
+  ('tasks.index',                '✅', '任务列表'),
   ('tasks.create',               '➕', '新增任务'),
-  ('calendar_view.month_view',   '📅', '日历视图'),
-  ('data_io.index',              '💾', '数据管理')
+  ('calendar_view.month_view',   '📆', '日历视图'),
+  ('data_io.index',              '💼', '数据管理')
 ] %}
 
 <div class="container-fluid spd-shell">

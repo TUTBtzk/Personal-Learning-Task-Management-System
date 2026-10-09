@@ -2,13 +2,15 @@
    自定义样式：只做 Bootstrap 5 之上的皮肤与布局补充，不覆盖组件行为 */
 
 :root {
-  --spd-bg: #f4f6fb;
-  --spd-border: #e6eaf3;
-  --spd-ink: #1f2d3d;
-  --spd-muted: #6c7a91;
-  --spd-primary: #0d6efd;
+  --spd-bg: #fdf5f8;
+  --spd-border: #f5e6ed;
+  --spd-ink: #3d1f2d;
+  --spd-muted: #9b7a8a;
+  --spd-primary: #ec4899;
+  --spd-primary-dark: #db2777;
+  --spd-primary-light: #f9a8d4;
   --spd-radius: 12px;
-  --spd-shadow: 0 1px 2px rgba(16, 34, 64, .04), 0 6px 18px rgba(16, 34, 64, .06);
+  --spd-shadow: 0 1px 2px rgba(236, 72, 153, .08), 0 6px 18px rgba(236, 72, 153, .12);
 }
 
 body {
@@ -20,8 +22,8 @@ body {
 
 /* ---------- 顶部导航与信息条 ---------- */
 .spd-navbar {
-  background: linear-gradient(90deg, #0b2b5b 0%, #14509c 60%, #1266c9 100%);
-  box-shadow: 0 2px 10px rgba(11, 43, 91, .25);
+  background: linear-gradient(90deg, #be185d 0%, #db2777 60%, #ec4899 100%);
+  box-shadow: 0 2px 10px rgba(190, 24, 93, .25);
 }
 
 .spd-navbar .navbar-brand { font-size: 1rem; letter-spacing: .5px; }
@@ -39,8 +41,8 @@ body {
   white-space: nowrap;
 }
 
-.spd-idcard b { color: #0b2b5b; }
-.spd-idcard-sep { width: 1px; height: .9rem; background: #dfe5f1; }
+.spd-idcard b { color: #be185d; }
+.spd-idcard-sep { width: 1px; height: .9rem; background: #f5e6ed; }
 
 .spd-idcard-mobile {
   border-radius: 0;
@@ -74,11 +76,11 @@ body {
   font-weight: 500;
 }
 
-.spd-navlink:hover { background: #f1f5ff; color: var(--spd-primary); }
+.spd-navlink:hover { background: #fef3f8; color: var(--spd-primary); }
 
 .spd-navlink.active {
-  background: linear-gradient(90deg, #e8f0ff, #f6faff);
-  color: #0b4ec2;
+  background: linear-gradient(90deg, #fce7f3, #fef3f8);
+  color: #be185d;
   box-shadow: inset 3px 0 0 var(--spd-primary);
 }
 
@@ -389,7 +391,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0b2b5b 0%, #14509c 55%, #2f8be0 100%);
+  background: linear-gradient(135deg, #9f1239 0%, #db2777 55%, #ec4899 100%);
 }
 
 .spd-login-wrap { width: 100%; max-width: 25rem; padding: 1rem; }

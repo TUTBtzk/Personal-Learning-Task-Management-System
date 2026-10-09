@@ -1,0 +1,168 @@
+{
+  "input": "D:\\SoftWare\\Project\\\u8f6f\u4ef6\\\u300a\u8ba1\u7b97\u673a\u7f51\u7edc\u300b\u8bfe\u7a0b\u8bbe\u8ba1\u62a5\u544a.docx",
+  "fonts_by_char_count": {},
+  "direct_run_formatting_runs": 948,
+  "direct_paragraph_formatting_paragraphs": 214,
+  "heading_like_paragraphs_not_heading_style": [
+    {
+      "para_index": 2,
+      "text": "\u5c0f\u578b\u4f01\u4e1a\u7f51\u7edc\u8bbe\u8ba1\u65b9\u6848",
+      "style": "Normal"
+    },
+    {
+      "para_index": 3,
+      "text": "\u4e00\u3001\u8bfe\u7a0b\u8bbe\u8ba1\u76ee\u7684",
+      "style": "Normal"
+    },
+    {
+      "para_index": 9,
+      "text": "\u4e8c\u3001\u9700\u6c42\u7279\u70b9\u63cf\u8ff0",
+      "style": "Normal"
+    },
+    {
+      "para_index": 20,
+      "text": "\u4e09\u3001\u8bbe\u8ba1\u539f\u5219",
+      "style": "Normal"
+    },
+    {
+      "para_index": 26,
+      "text": "\u56db\u3001\u89e3\u51b3\u65b9\u6848\u8bbe\u8ba1",
+      "style": "Normal"
+    },
+    {
+      "para_index": 27,
+      "text": "4.1 \u7f51\u7edc\u8bbe\u5907\u9009\u578b",
+      "style": "Normal"
+    },
+    {
+      "para_index": 30,
+      "text": "4.2 \u7efc\u5408\u5e03\u7ebf\u8bbe\u8ba1",
+      "style": "Normal"
+    },
+    {
+      "para_index": 33,
+      "text": "4.3 \u62d3\u6251\u7ed3\u6784\u56fe",
+      "style": "Normal"
+    },
+    {
+      "para_index": 38,
+      "text": "4.4 IP\u5730\u5740\u89c4\u5212",
+      "style": "Normal"
+    },
+    {
+      "para_index": 42,
+      "text": "4.5 \u8def\u7531\u534f\u8bae\u9009\u62e9",
+      "style": "Normal"
+    },
+    {
+      "para_index": 45,
+      "text": "4.6 \u5173\u952e\u6280\u672f\u4e0e\u914d\u7f6e\u8981\u70b9",
+      "style": "Normal"
+    },
+    {
+      "para_index": 52,
+      "text": "4.7 \u4ea4\u6362\u673a\u914d\u7f6e\u4ee3\u7801",
+      "style": "Normal"
+    },
+    {
+      "para_index": 69,
+      "text": "4.8 \u8def\u7531\u5668\u914d\u7f6e\u4ee3\u7801",
+      "style": "Normal"
+    },
+    {
+      "para_index": 86,
+      "text": "4.9 \u8fde\u901a\u6027\u6d4b\u8bd5",
+      "style": "Normal"
+    },
+    {
+      "para_index": 106,
+      "text": "\u4e94\u3001\u8bfe\u7a0b\u8bbe\u8ba1\u603b\u7ed3",
+      "style": "Normal"
+    },
+    {
+      "para_index": 114,
+      "text": "\u8bbe\u5907\u7c7b\u578b",
+      "style": "Normal"
+    },
+    {
+      "para_index": 115,
+      "text": "\u578b\u53f7",
+      "style": "Normal"
+    },
+    {
+      "para_index": 116,
+      "text": "\u6570\u91cf",
+      "style": "Normal"
+    },
+    {
+      "para_index": 117,
+      "text": "\u4e3b\u8981\u4f5c\u7528",
+      "style": "Normal"
+    },
+    {
+      "para_index": 134,
+      "text": "\u8fde\u63a5\u5bf9\u8c61",
+      "style": "Normal"
+    }
+  ],
+  "examples": {
+    "direct_run_formatting": [
+      {
+        "para_index": 2,
+        "run_text": "\u5c0f\u578b\u4f01\u4e1a\u7f51\u7edc\u8bbe\u8ba1\u65b9\u6848",
+        "style": "Normal"
+      },
+      {
+        "para_index": 3,
+        "run_text": "\u4e00\u3001\u8bfe\u7a0b\u8bbe\u8ba1\u76ee\u7684",
+        "style": "Normal"
+      },
+      {
+        "para_index": 4,
+        "run_text": "\u300a\u8ba1\u7b97\u673a\u7f51\u7edc\u300b\u8bfe\u7a0b\u8bbe\u8ba1\u662f\u5728\u5b8c\u6210\u8bfe\u7a0b\u7406\u8bba\u5b66\u4e60\u4e4b\u540e\u8fdb\u884c\u7684\u7efc\u5408\u5b9e\u8df5\u8bad\u7ec3\u3002\u672c\u8bbe\u8ba1\u4ee5\u5c0f\u578b\u4f01\u4e1a\u7f51\u7edc\u4e3a\u80cc\u666f\uff0c\u5728",
+        "style": "Normal"
+      },
+      {
+        "para_index": 4,
+        "run_text": "Cisco Packet Tracer",
+        "style": "Normal"
+      },
+      {
+        "para_index": 4,
+        "run_text": "\u4eff\u771f\u73af\u5883\u4e2d\u5b8c\u6210\u9700\u6c42\u5206\u6790\u3001\u7f51\u7edc\u89c4\u5212\u3001\u62d3\u6251\u642d\u5efa\u3001\u8bbe\u5907\u914d\u7f6e\u548c\u8fde\u901a\u6027\u9a8c\u8bc1\uff0c\u4e3b\u8981\u76ee\u7684\u5982\u4e0b\uff1a",
+        "style": "Normal"
+      }
+    ],
+    "direct_paragraph_formatting": [
+      {
+        "para_index": 3,
+        "text": "\u4e00\u3001\u8bfe\u7a0b\u8bbe\u8ba1\u76ee\u7684",
+        "style": "Normal"
+      },
+      {
+        "para_index": 4,
+        "text": "\u300a\u8ba1\u7b97\u673a\u7f51\u7edc\u300b\u8bfe\u7a0b\u8bbe\u8ba1\u662f\u5728\u5b8c\u6210\u8bfe\u7a0b\u7406\u8bba\u5b66\u4e60\u4e4b\u540e\u8fdb\u884c\u7684\u7efc\u5408\u5b9e\u8df5\u8bad\u7ec3\u3002\u672c\u8bbe\u8ba1\u4ee5\u5c0f\u578b\u4f01\u4e1a\u7f51\u7edc\u4e3a\u80cc\u666f\uff0c\u5728Cisco Packet Tracer\u4eff\u771f\u73af\u5883\u4e2d\u5b8c\u6210\u9700\u6c42\u5206\u6790\u3001\u7f51\u7edc\u89c4\u5212\u3001\u62d3\u6251\u642d\u5efa\u3001\u8bbe\u5907\u914d\u7f6e\u548c\u8fde\u901a\u6027\u9a8c\u8bc1\uff0c\u4e3b\u8981\u76ee\u7684\u5982\u4e0b\uff1a",
+        "style": "Normal"
+      },
+      {
+        "para_index": 5,
+        "text": "\uff081\uff09\u7efc\u5408\u8fd0\u7528\u8ba1\u7b97\u673a\u7f51\u7edc\u8bfe\u7a0b\u77e5\u8bc6\uff0c\u7406\u89e3\u4ece\u9700\u6c42\u5206\u6790\u3001\u5730\u5740\u89c4\u5212\u5230\u8bbe\u5907\u914d\u7f6e\u548c\u6d4b\u8bd5\u9a8c\u8bc1\u7684\u5b8c\u6574\u7ec4\u7f51\u6d41\u7a0b\u3002",
+        "style": "Normal"
+      },
+      {
+        "para_index": 6,
+        "text": "\uff082\uff09\u638c\u63e1\u4f01\u4e1a\u7f51\u7edc\u62d3\u6251\u8bbe\u8ba1\u3001\u7f51\u7edc\u8bbe\u5907\u9009\u578b\u548c\u7efc\u5408\u5e03\u7ebf\u7684\u57fa\u672c\u65b9\u6cd5\u3002",
+        "style": "Normal"
+      },
+      {
+        "para_index": 7,
+        "text": "\uff083\uff09\u719f\u6089PC\u3001\u670d\u52a1\u5668\u3001\u4e8c\u5c42\u4ea4\u6362\u673a\u548c\u8def\u7531\u5668\u4e4b\u95f4\u7684\u8fde\u63a5\u65b9\u5f0f\u53caCisco IOS\u57fa\u672c\u914d\u7f6e\u547d\u4ee4\u3002",
+        "style": "Normal"
+      }
+    ]
+  },
+  "notes": [
+    "Direct formatting is not always wrong, but it often causes inconsistent output when templates change.",
+    "Heading-like paragraphs not using Heading styles can break TOC and accessibility."
+  ]
+}
